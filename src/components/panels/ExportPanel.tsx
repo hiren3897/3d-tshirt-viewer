@@ -2,15 +2,17 @@
 import React, { useState } from 'react';
 import { Button } from '../ui/Button';
 import { captureImage, recordAnimation } from '../../lib/exportUtils';
+import { useDesignStore } from '../../contexts/DesignStoreProvider';
 
 const ExportPanel: React.FC = () => {
   const [isCapturing, setIsCapturing] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
 
-  const handleCaptureImage = async (side: 'front' | 'back') => {
+  const side = useDesignStore((state) => state.activeSide);
+  const handleCaptureImage = async () => {
     setIsCapturing(true);
     try {
-      const blob = await captureImage(side, 2); // quality 2 for higher resolution
+      const blob = await captureImage(2); // quality 2 for higher resolution
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -68,14 +70,14 @@ const ExportPanel: React.FC = () => {
       <h3 className="font-medium mb-2">Export Options</h3>
       
       <Button 
-        onClick={() => handleCaptureImage('front')} 
+        onClick={() => handleCaptureImage()} 
         disabled={isCapturing}
         className="w-full"
       >
         {isCapturing ? 'Capturing Front...' : 'Save Front Image'}
       </Button>
       <Button 
-        onClick={() => handleCaptureImage('back')} 
+        onClick={() => handleCaptureImage()} 
         disabled={isCapturing}
         className="w-full"
       >

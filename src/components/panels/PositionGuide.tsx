@@ -1,7 +1,7 @@
 import React, { useRef, useCallback, useMemo, useEffect } from 'react';
-import { useDesignStore, type Decal } from '../../stores/designStore';
 import Moveable from 'react-moveable';
 import type { OnDrag, OnDragStart, OnResizeStart, OnRotate, OnResize } from 'react-moveable';
+import { useDesignStore, type Decal } from '../../contexts/DesignStoreProvider';
 
 // IMPORTANT: These 2D regions must precisely match the visual layout in placementguide.jpg
 // Measure these values carefully from your image, relative to its total dimensions (900x800 here).
@@ -320,7 +320,15 @@ const DecalDisplay: React.FC<DecalDisplayProps> = ({
 };
 
 const PositionGuide: React.FC = () => {
-  const { decals, activeSide, updateDecal, setActiveDecalId, activeDecalId, setIsDraggingUI, setActiveSide } = useDesignStore();
+  const { decals, activeSide, updateDecal, setActiveDecalId, activeDecalId, setIsDraggingUI, setActiveSide } = useDesignStore((state) => ({
+    decals: state.decals,
+    activeSide: state.activeSide,
+    updateDecal: state.updateDecal,
+    setActiveDecalId: state.setActiveDecalId,
+    activeDecalId: state.activeDecalId,
+    setIsDraggingUI: state.setIsDraggingUI,
+    setActiveSide: state.setActiveSide,
+  }));
   const containerRef = useRef<HTMLDivElement>(null);
 
   const getSideHighlightStyles = useCallback((side: Decal['side']): React.CSSProperties => {

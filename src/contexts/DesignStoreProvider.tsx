@@ -1,5 +1,7 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
+import { useState, useCallback, type ReactNode } from 'react';
+import { createContext, useContextSelector } from "use-context-selector";
 
+export type Side = 'front' | 'back' | 'left_sleeve' | 'right_sleeve';
 // Define the Decal interface
 export interface Decal {
   id: string;
@@ -8,7 +10,7 @@ export interface Decal {
   position: [number, number, number];
   rotation: [number, number, number];
   scale: [number, number, number];
-  side: 'front' | 'back' | 'left_sleeve' | 'right_sleeve';
+  side: Side
   visible: boolean;
 }
 
@@ -18,7 +20,7 @@ interface DesignState {
   model: string; // Not currently used in the provided code for persistence, but good to keep
   decals: Decal[];
   activeDecalId: string | null;
-  activeSide: 'front' | 'back' | 'left_sleeve' | 'right_sleeve';
+  activeSide: Side
   backgroundColor: string;
   intro: boolean; // Not currently used in the provided code for persistence, but good to keep
   isDraggingUI: boolean;
@@ -27,7 +29,7 @@ interface DesignState {
 // Define the shape of the actions that can be performed on the state
 interface DesignActions {
   setColor: (color: string) => void;
-  setActiveSide: (side: 'front' | 'back' | 'left_sleeve' | 'right_sleeve') => void;
+  setActiveSide: (side: Side) => void;
   addDecal: (texture: string, type: 'image' | 'text') => void;
   updateDecal: (id: string, updates: Partial<Omit<Decal, 'id'>>) => void;
   removeDecal: (id: string) => void;
@@ -69,7 +71,7 @@ export const DesignProvider = ({ children }: DesignProviderProps) => {
     setState((prevState) => ({ ...prevState, color }));
   }, []);
 
-  const setActiveSide = useCallback((side: 'front' | 'back' | 'left_sleeve' | 'right_sleeve') => {
+  const setActiveSide = useCallback((side: Side) => {
     setState((prevState) => ({ ...prevState, activeSide: side }));
   }, []);
 
@@ -175,10 +177,11 @@ export const DesignProvider = ({ children }: DesignProviderProps) => {
 
 // Custom hook to consume the design context
 // eslint-disable-next-line react-refresh/only-export-components
-export const useDesignStore = () => {
-  const context = useContext(DesignContext);
-  if (context === undefined) {
-    throw new Error('useDesignStore must be used within a DesignProvider');
-  }
-  return context;
+export const useDesignStore = <T,>(selector: (state: DesignContextType) => T): T => {
+  return useContextSelector(DesignContext, (state) => {
+    if (!state) {
+      throw new Error('useDesignStore must be used within a DesignProvider');
+    }
+    return selector(state);
+  });
 };
