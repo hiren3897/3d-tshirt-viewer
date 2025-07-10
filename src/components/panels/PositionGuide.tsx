@@ -13,8 +13,8 @@ const PIXEL_REGIONS_2D = {
 const MESH_REGIONS_3D = {
   front: { minX: -0.5, maxX: 0.5, minY: -0.5, maxY: 0.5, fixedZ: 0.1, defaultRotationY: 0 },
   back: { minX: -0.5, maxX: 0.5, minY: -0.5, maxY: 0.5, fixedZ: -0.1, defaultRotationY: Math.PI },
-  left_sleeve: { minX: 0.2, maxX: 0.7, minY: -0.2, maxY: 0.2, fixedZ: 0.05, defaultRotationY: Math.PI / 2 },
-  right_sleeve: { minX: -0.7, maxX: -0.2, minY: -0.2, maxY: 0.2, fixedZ: 0.05, defaultRotationY: -Math.PI / 2 },
+  right_sleeve: { minX: -0.1, maxX: 0.6, minY: -0.2, maxY: 0.2, fixedZ: 0.05, defaultRotationY: Math.PI / 2 },
+  left_sleeve: { minX: -0.6, maxX: -0.1, minY: -0.2, maxY: 0.2, fixedZ: 0.05, defaultRotationY: -Math.PI / 2 },
 };
 
 // Helper function to map a 2D pixel coordinate (relative to container) to a 3D decal coordinate
@@ -175,6 +175,7 @@ const DecalDisplay: React.FC<DecalDisplayProps> = ({
     updateDecalPositionAndSide(currentPixelX, currentPixelY, decal.rotation[2]);
 
   }, [containerRef, decal.rotation, updateDecalPositionAndSide]);
+
 
   const onDragEnd = useCallback(() => {
     setIsDraggingUI(false);
