@@ -4,7 +4,6 @@ import { Button } from '../ui/Button';
 import FileUpload from '../ui/FileUpload';
 import ColorPicker from './ColorPicker';
 import { Tabs, TabsList, TabsTrigger } from '../ui/Tabs'; // Ensure TabsContent is imported
-import TextEditor from './TextEditor';
 import PositionGuide from './PositionGuide'; // Import the new component
 
 const DesignPanel: React.FC = () => {
@@ -91,8 +90,6 @@ const DesignPanel: React.FC = () => {
           label="Upload Design"
           onFileUpload={handleImageUpload}
         />
-        {/* TextEditor will now work on the active decal, assumed to be handled internally */}
-        <TextEditor />
         <div className="flex gap-2 pt-4">
           <Button onClick={resetDesign} className="flex-1">
             Reset

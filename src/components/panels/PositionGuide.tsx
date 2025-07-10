@@ -242,7 +242,6 @@ const DecalDisplay: React.FC<DecalDisplayProps> = ({
     }
   }, [decal.position, decal.scale, decal.rotation, decal.side, isActive]); // Depend on decal properties and active state
 
-
   return (
     <>
       <div
@@ -282,14 +281,14 @@ const DecalDisplay: React.FC<DecalDisplayProps> = ({
           resizable={true}
           rotatable={true}
           snappable={true}
-          keepRatio={true} // Maintain aspect ratio during resize
+          // keepRatio={true} // Maintain aspect ratio during resize
           throttleDrag={1}
           throttleResize={1}
           throttleRotate={1}
           renderDirections={["nw", "n", "ne", "w", "e", "sw", "s", "se"]}
           edge={false}
           zoom={1}
-          origin={true} // Show the origin dot
+          // origin={true} // Show the origin dot
           padding={{ left: 0, top: 0, right: 0, bottom: 0 }}
 
           onDragStart={(e: OnDragStart) => {

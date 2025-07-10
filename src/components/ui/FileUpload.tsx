@@ -13,7 +13,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ accept, label, onFileUpload }) 
       e.target.value = '' // Reset input
     }
   }, [onFileUpload])
-
+  
   return (
     <div className="space-y-2">
       <label className="block text-sm font-medium">{label}</label>
