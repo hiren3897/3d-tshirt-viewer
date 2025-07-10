@@ -74,14 +74,7 @@ const ExportPanel: React.FC = () => {
         disabled={isCapturing}
         className="w-full"
       >
-        {isCapturing ? 'Capturing Front...' : 'Save Front Image'}
-      </Button>
-      <Button 
-        onClick={() => handleCaptureImage()} 
-        disabled={isCapturing}
-        className="w-full"
-      >
-        {isCapturing ? 'Capturing Back...' : 'Save Back Image'}
+        {isCapturing ? 'Capturing...' : 'Save Image'}
       </Button>
       <Button 
         onClick={handleRecordVideo} 
