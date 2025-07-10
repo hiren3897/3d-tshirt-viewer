@@ -1,11 +1,10 @@
 import React from 'react';
-import { useDesignStore } from '../../stores/designStore';
 import { Button } from '../ui/Button';
 import FileUpload from '../ui/FileUpload';
 import ColorPicker from './ColorPicker';
 import { Tabs, TabsList, TabsTrigger } from '../ui/Tabs'; // Ensure TabsContent is imported
-import TextEditor from './TextEditor';
 import PositionGuide from './PositionGuide'; // Import the new component
+import { useDesignStore } from '../../contexts/DesignStoreProvider';
 
 const DesignPanel: React.FC = () => {
   const {
@@ -15,14 +14,24 @@ const DesignPanel: React.FC = () => {
     setActiveSide,
     addDecal,
     resetDesign,
-    saveLayout,
     backgroundColor,
     setBackgroundColor,
-    loadLayout,
     activeDecalId,
     setActiveDecalId,
     decals,
-  } = useDesignStore();
+  } = useDesignStore((state) => ({
+    color: state.color,
+    activeSide: state.activeSide,
+    setColor: state.setColor,
+    setActiveSide: state.setActiveSide,
+    addDecal: state.addDecal,
+    resetDesign: state.resetDesign,
+    backgroundColor: state.backgroundColor,
+    setBackgroundColor: state.setBackgroundColor,
+    activeDecalId: state.activeDecalId,
+    setActiveDecalId: state.setActiveDecalId,
+    decals: state.decals,
+  }));
 
   const handleImageUpload = (file: File) => {
     const texture = URL.createObjectURL(file);
@@ -91,17 +100,9 @@ const DesignPanel: React.FC = () => {
           label="Upload Design"
           onFileUpload={handleImageUpload}
         />
-        {/* TextEditor will now work on the active decal, assumed to be handled internally */}
-        <TextEditor />
         <div className="flex gap-2 pt-4">
           <Button onClick={resetDesign} className="flex-1">
             Reset
-          </Button>
-          <Button onClick={saveLayout} className="flex-1 bg-primary-500 hover:bg-primary-600">
-            Save Layout
-          </Button>
-          <Button onClick={loadLayout} className="flex-1 bg-gray-500 hover:bg-gray-600">
-            Load Layout
           </Button>
         </div>
       </div>

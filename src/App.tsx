@@ -5,9 +5,11 @@ import ExportPanel from './components/panels/ExportPanel'
 import TextEditor from './components/panels/TextEditor'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/Tabs'
 import { CanvasModel } from './components/canvas/Canvas'
+import { DesignProvider } from './contexts/DesignStoreProvider'
 
 const App: React.FC = () => {
   return (
+    <DesignProvider>
     <div className="flex flex-col h-screen md:flex-row bg-gray-50">
       {/* Canvas Area */}
       <div className="w-full h-[60vh] md:h-full md:w-3/4 relative">
@@ -35,6 +37,7 @@ const App: React.FC = () => {
         </Tabs>
       </div>
     </div>
+    </DesignProvider>
   )
 }
 

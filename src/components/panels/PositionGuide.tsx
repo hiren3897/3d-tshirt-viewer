@@ -1,24 +1,20 @@
 import React, { useRef, useCallback, useMemo, useEffect } from 'react';
-import { useDesignStore, type Decal } from '../../stores/designStore';
 import Moveable from 'react-moveable';
 import type { OnDrag, OnDragStart, OnResizeStart, OnRotate, OnResize } from 'react-moveable';
+import { useDesignStore, type Decal } from '../../contexts/DesignStoreProvider';
 
-// IMPORTANT: These 2D regions must precisely match the visual layout in placementguide.jpg
-// Measure these values carefully from your image, relative to its total dimensions (900x800 here).
 const PIXEL_REGIONS_2D = {
-  front: { x: 0.05, y: 0.18, width: 0.43, height: 0.65 }, // Example values, needs fine-tuning
-  back: { x: 0.52, y: 0.18, width: 0.43, height: 0.65 }, // Example values, needs fine-tuning
-  left_sleeve: { x: 0.02, y: 0.85, width: 0.48, height: 0.15 }, // Example values, needs fine-tuning
-  right_sleeve: { x: 0.50, y: 0.85, width: 0.48, height: 0.15 }, // Example values, needs fine-tuning
+  front: { x: 0.05, y: 0.18, width: 0.43, height: 0.63 }, 
+  back: { x: 0.52, y: 0.18, width: 0.43, height: 0.63 }, 
+  left_sleeve: { x: 0.02, y: 0.85, width: 0.48, height: 0.15 }, 
+  right_sleeve: { x: 0.50, y: 0.85, width: 0.48, height: 0.15 }, 
 };
 
-// IMPORTANT: These 3D regions must precisely match the UV coordinates on your 3D model.
-// Obtain these from your 3D modeling software (e.g., Blender UV Editor).
 const MESH_REGIONS_3D = {
   front: { minX: -0.5, maxX: 0.5, minY: -0.5, maxY: 0.5, fixedZ: 0.1, defaultRotationY: 0 },
   back: { minX: -0.5, maxX: 0.5, minY: -0.5, maxY: 0.5, fixedZ: -0.1, defaultRotationY: Math.PI },
-  left_sleeve: { minX: 0.2, maxX: 0.7, minY: -0.2, maxY: 0.2, fixedZ: 0.05, defaultRotationY: Math.PI / 2 },
-  right_sleeve: { minX: -0.7, maxX: -0.2, minY: -0.2, maxY: 0.2, fixedZ: 0.05, defaultRotationY: -Math.PI / 2 },
+  right_sleeve: { minX: -0.1, maxX: 0.6, minY: -0.2, maxY: 0.2, fixedZ: 0.05, defaultRotationY: Math.PI / 2 },
+  left_sleeve: { minX: -0.6, maxX: -0.1, minY: -0.2, maxY: 0.2, fixedZ: 0.05, defaultRotationY: -Math.PI / 2 },
 };
 
 // Helper function to map a 2D pixel coordinate (relative to container) to a 3D decal coordinate
@@ -186,26 +182,19 @@ const DecalDisplay: React.FC<DecalDisplayProps> = ({
   }, [setIsDraggingUI]);
 
   const onResize = useCallback((e: OnResize) => {
-    // Apply immediate visual update to the DOM element for smooth resize
-    e.target.style.width = `${e.width}px`;
-    e.target.style.height = `${e.height}px`;
-    e.target.style.transform = e.transform; // Use e.transform for consistency
+  e.target.style.width = `${e.width}px`;
+  e.target.style.height = `${e.height}px`;
 
-    // Calculate new 3D scale based on new pixel dimensions
-    const pixelTo3DScaleFactor = base3DScale / base2DPixelSizeFor3DScale;
-    const newScaleX = e.width * pixelTo3DScaleFactor;
-    const newScaleY = e.height * pixelTo3DScaleFactor;
+  const pixelTo3DScaleFactor = base3DScale / base2DPixelSizeFor3DScale;
+  const newScaleX = e.width * pixelTo3DScaleFactor;
+  const newScaleY = e.height * pixelTo3DScaleFactor;
 
-    // Ensure a minimum scale to prevent decals from becoming infinitesimally small or zero
-    const minAllowedScale = 0.001;
-    const finalScaleX = Math.max(minAllowedScale, newScaleX);
-    const finalScaleY = Math.max(minAllowedScale, newScaleY);
+  const minAllowedScale = 0.001;
+  const finalScaleX = Math.max(minAllowedScale, newScaleX);
+  const finalScaleY = Math.max(minAllowedScale, newScaleY);
 
-    // Update the decal in the store live during resize
-    updateDecal(decal.id, {
-      scale: [finalScaleX, finalScaleY, decal.scale[2]],
-    });
-  }, [decal.id, decal.scale, updateDecal, base2DPixelSizeFor3DScale, base3DScale]);
+  updateDecal(decal.id, { scale: [finalScaleX, finalScaleY, decal.scale[2]] });
+}, [decal.id, decal.scale, updateDecal]);
 
   const onResizeEnd = useCallback(() => {
     setIsDraggingUI(false); // Release UI lock after resize
@@ -241,7 +230,6 @@ const DecalDisplay: React.FC<DecalDisplayProps> = ({
       moveableRef.current.updateRect();
     }
   }, [decal.position, decal.scale, decal.rotation, decal.side, isActive]); // Depend on decal properties and active state
-
 
   return (
     <>
@@ -282,14 +270,14 @@ const DecalDisplay: React.FC<DecalDisplayProps> = ({
           resizable={true}
           rotatable={true}
           snappable={true}
-          keepRatio={true} // Maintain aspect ratio during resize
+          // keepRatio={true} // Maintain aspect ratio during resize
           throttleDrag={1}
           throttleResize={1}
           throttleRotate={1}
           renderDirections={["nw", "n", "ne", "w", "e", "sw", "s", "se"]}
           edge={false}
           zoom={1}
-          origin={true} // Show the origin dot
+          // origin={true} // Show the origin dot
           padding={{ left: 0, top: 0, right: 0, bottom: 0 }}
 
           onDragStart={(e: OnDragStart) => {
@@ -321,7 +309,15 @@ const DecalDisplay: React.FC<DecalDisplayProps> = ({
 };
 
 const PositionGuide: React.FC = () => {
-  const { decals, activeSide, updateDecal, setActiveDecalId, activeDecalId, setIsDraggingUI, setActiveSide } = useDesignStore();
+  const { decals, activeSide, updateDecal, setActiveDecalId, activeDecalId, setIsDraggingUI, setActiveSide } = useDesignStore((state) => ({
+    decals: state.decals,
+    activeSide: state.activeSide,
+    updateDecal: state.updateDecal,
+    setActiveDecalId: state.setActiveDecalId,
+    activeDecalId: state.activeDecalId,
+    setIsDraggingUI: state.setIsDraggingUI,
+    setActiveSide: state.setActiveSide,
+  }));
   const containerRef = useRef<HTMLDivElement>(null);
 
   const getSideHighlightStyles = useCallback((side: Decal['side']): React.CSSProperties => {

@@ -1,15 +1,15 @@
 import React, { useState } from 'react'
 import { generateTextTexture } from '../../lib/textureUtils'
-import { useDesignStore } from '../../stores/designStore'
 import { Button } from '../ui/Button'
 import { Input } from '../ui/Input'
+import { useDesignStore } from '../../contexts/DesignStoreProvider'
 
 
 const TextEditor: React.FC = () => {
   const [text, setText] = useState('')
   const [color, setColor] = useState('#000000')
   const [fontSize, setFontSize] = useState(36)
-  const { addDecal } = useDesignStore()
+  const addDecal = useDesignStore((state) => state.addDecal)
 
   const handleAddText = () => {
     if (text.trim()) {

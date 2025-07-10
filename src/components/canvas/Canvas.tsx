@@ -3,11 +3,14 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { useGLTF, useTexture, Decal, Environment, Center, OrbitControls } from '@react-three/drei';
 import { easing } from 'maath';
 import * as THREE from 'three';
-import { useDesignStore } from '../../stores/designStore';
-import type { Decal as DecalType } from '../../stores/designStore';
+import { useDesignStore, type Decal as DecalType } from '../../contexts/DesignStoreProvider';
 
 export const CanvasModel = () => {
-  const { color, decals, backgroundColor } = useDesignStore();
+  const { color, decals, backgroundColor } = useDesignStore((state) => ({
+    color: state.color,
+    decals: state.decals,
+    backgroundColor: state.backgroundColor,
+  }));
   return (
     <div className="relative h-full" style={{ backgroundColor }}>
       <Canvas
@@ -28,12 +31,17 @@ export const CanvasModel = () => {
           </CameraRig>
         </Suspense>
       </Canvas>
+      <div className="absolute top-4 right-4 bg-white p-4 rounded-lg shadow-lg">
+    </div>
     </div>
   );
 };
 
 function CameraRig({ children }: { children: React.ReactNode }) {
-  const { isDraggingUI, activeSide } = useDesignStore(); // Destructure isDraggingUI and activeSide
+  const { isDraggingUI, activeSide } = useDesignStore((state) => ({
+    isDraggingUI: state.isDraggingUI,
+    activeSide: state.activeSide,
+  })); // Destructure isDraggingUI and activeSide
   const ref = useRef<THREE.Group>(null!);
 
   useFrame((_, delta) => {
