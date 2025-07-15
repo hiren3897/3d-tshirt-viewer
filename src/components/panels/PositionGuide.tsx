@@ -1,4 +1,4 @@
-import React, { useRef, useCallback, useMemo, useEffect } from 'react';
+import React, { useRef, useCallback, useEffect, useState } from 'react';
 import Moveable from 'react-moveable';
 import type { OnDrag, OnDragStart, OnResizeStart, OnRotate, OnResize } from 'react-moveable';
 import { useDesignStore, type Decal } from '../../contexts/DesignStoreProvider';
@@ -92,15 +92,15 @@ const DecalDisplay: React.FC<DecalDisplayProps> = ({
 }) => {
   const decalRef = useRef<HTMLDivElement>(null);
   const moveableRef = useRef<Moveable>(null);
+  const [pos2D, set2DPosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
 
   // These constants are crucial for consistent scaling between 2D and 3D.
   // Ensure they accurately reflect the relationship.
-  const base2DPixelSizeFor3DScale = 80; // e.g., 80px width in 2D guide
+  const base2DPixelSizeFor3DScale = 180; // e.g., 80px width in 2D guide
   const base3DScale = 0.4;              // ... corresponds to 0.4 units in 3D
 
-  // Recalculate 2D position when decal properties or container size changes.
-  const current2DPosition = useMemo(() => {
-    if (!containerRef.current) return { x: 0, y: 0 };
+  useEffect(() => {
+    if (!containerRef.current) return;
     const containerRect = containerRef.current.getBoundingClientRect();
     const pos = map3Dto2D(decal.position, containerRect, decal.side);
 
@@ -112,8 +112,8 @@ const DecalDisplay: React.FC<DecalDisplayProps> = ({
       pos.x -= decalWidth / 2;
       pos.y -= decalHeight / 2;
     }
-    return pos;
-  }, [decal.position, decal.side, containerRef, decalRef]);
+    set2DPosition(pos);
+  }, [containerRef, decal.position, decal.side]);
 
   // Helper to update position & side simultaneously (used by onDrag)
   const updateDecalPositionAndSide = useCallback((
@@ -222,14 +222,14 @@ const DecalDisplay: React.FC<DecalDisplayProps> = ({
 
   // Use an effect to update Moveable's internal state if decal properties change
   // This helps keep the Moveable box synced with the decal's actual state (from store)
-  useEffect(() => {
-    if (moveableRef.current && decalRef.current) {
-      // Force Moveable to update its internal bounding box and transformation matrix
-      // This is crucial for two-way binding as the decal's size/pos/rot might change from store
-      // (e.g., when switching sides, or initial render)
-      moveableRef.current.updateRect();
-    }
-  }, [decal.position, decal.scale, decal.rotation, decal.side, isActive]); // Depend on decal properties and active state
+  // useEffect(() => {
+  //   if (moveableRef.current && decalRef.current) {
+  //     // Force Moveable to update its internal bounding box and transformation matrix
+  //     // This is crucial for two-way binding as the decal's size/pos/rot might change from store
+  //     // (e.g., when switching sides, or initial render)
+  //     moveableRef.current.updateRect();
+  //   }
+  // }, [decal.position, decal.scale, decal.rotation, decal.side, isActive]); // Depend on decal properties and active state
 
   return (
     <>
@@ -242,8 +242,8 @@ const DecalDisplay: React.FC<DecalDisplayProps> = ({
         }}
         style={{
           position: 'absolute',
-          left: current2DPosition.x,
-          top: current2DPosition.y,
+          left: pos2D.x,
+          top: pos2D.y,
           // Calculate 2D width/height based on current 3D scale and base ratio
           width: `${decal.scale[0] / base3DScale * base2DPixelSizeFor3DScale}px`,
           height: `${decal.scale[1] / base3DScale * base2DPixelSizeFor3DScale}px`,
@@ -261,7 +261,7 @@ const DecalDisplay: React.FC<DecalDisplayProps> = ({
           pointerEvents: isActive ? 'auto' : 'auto', // Allow pointer events on active decal
         }}
       />
-      {isActive && (
+      {pos2D.x !== 0 && pos2D.y !== 0 && isActive && (
         <Moveable
           ref={moveableRef}
           target={decalRef.current}
@@ -279,10 +279,10 @@ const DecalDisplay: React.FC<DecalDisplayProps> = ({
           zoom={1}
           // origin={true} // Show the origin dot
           padding={{ left: 0, top: 0, right: 0, bottom: 0 }}
-
+          
           onDragStart={(e: OnDragStart) => {
             // Set initial drag position based on current decal's 2D position
-            e.set([current2DPosition.x, current2DPosition.y]);
+            e.set([pos2D.x, pos2D.y]);
             setIsDraggingUI(true);
           }}
           onDrag={onDrag}
@@ -291,7 +291,7 @@ const DecalDisplay: React.FC<DecalDisplayProps> = ({
           onResizeStart={(e: OnResizeStart) => {
             setIsDraggingUI(true);
             if (e.dragStart) {
-              e.dragStart.set([0, 0]); // Reset drag translation for resize
+              // e.dragStart.set([0, 0]); // Reset drag translation for resize
             }
           }}
           onResize={onResize} // Live update
@@ -353,11 +353,9 @@ const PositionGuide: React.FC = () => {
       }}
       onClick={() => setActiveDecalId(null)} // Click outside decals to deactivate
     >
-      {/* Render highlight regions for each side */}
       {Object.keys(PIXEL_REGIONS_2D).map(sideKey => (
         <div key={sideKey} style={getSideHighlightStyles(sideKey as Decal['side'])} />
       ))}
-
       {/* Render DecalDisplay components for each visible decal */}
       {decals.filter(d => d.visible).map((decal) => (
         <DecalDisplay
