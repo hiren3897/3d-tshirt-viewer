@@ -31,8 +31,6 @@ export const CanvasModel = () => {
           </CameraRig>
         </Suspense>
       </Canvas>
-      <div className="absolute top-4 right-4 bg-white p-4 rounded-lg shadow-lg">
-    </div>
     </div>
   );
 };

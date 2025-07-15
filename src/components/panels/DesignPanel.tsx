@@ -2,35 +2,25 @@ import React from 'react';
 import { Button } from '../ui/Button';
 import FileUpload from '../ui/FileUpload';
 import ColorPicker from './ColorPicker';
-import { Tabs, TabsList, TabsTrigger } from '../ui/Tabs'; // Ensure TabsContent is imported
-import PositionGuide from './PositionGuide'; // Import the new component
+import PositionGuide from './PositionGuide';
 import { useDesignStore } from '../../contexts/DesignStoreProvider';
+import ExportPanel from './ExportPanel';
 
 const DesignPanel: React.FC = () => {
   const {
     color,
-    activeSide,
     setColor,
-    setActiveSide,
     addDecal,
     resetDesign,
     backgroundColor,
     setBackgroundColor,
-    activeDecalId,
-    setActiveDecalId,
-    decals,
   } = useDesignStore((state) => ({
     color: state.color,
-    activeSide: state.activeSide,
     setColor: state.setColor,
-    setActiveSide: state.setActiveSide,
     addDecal: state.addDecal,
     resetDesign: state.resetDesign,
     backgroundColor: state.backgroundColor,
     setBackgroundColor: state.setBackgroundColor,
-    activeDecalId: state.activeDecalId,
-    setActiveDecalId: state.setActiveDecalId,
-    decals: state.decals,
   }));
 
   const handleImageUpload = (file: File) => {
@@ -39,74 +29,54 @@ const DesignPanel: React.FC = () => {
   };
 
   return (
-    <div className="w-full bg-white p-4 rounded-lg" style={{overflow: "auto"}}>
-      <Tabs
-        value={activeSide}
-        onValueChange={(value) =>
-          setActiveSide(value as 'front' | 'back' | 'left_sleeve' | 'right_sleeve')
-        }
-        className="w-full mb-4"
-      >
-        <TabsList className="grid grid-cols-4 w-full mb-4">
-          <TabsTrigger value="front">Front</TabsTrigger>
-          <TabsTrigger value="back">Back</TabsTrigger>
-          <TabsTrigger value="left_sleeve">Left Sleeve</TabsTrigger>
-          <TabsTrigger value="right_sleeve">Right Sleeve</TabsTrigger>
-        </TabsList>
-      </Tabs>
-      <div className="mt-4 space-y-6">
-        {/* Position Guide Section */}
-        <div className="border rounded-md p-2">
-          <h3 className="font-medium mb-2">Adjust Decal Positions</h3>
-          <PositionGuide />
-        </div>
+    <div className="w-full h-full flex flex-col bg-white p-4 space-y-4">
+      {/* Header with reset button */}
+      <div className="flex justify-between items-center">
+        <h2 className="text-lg font-semibold">T-Shirt Designer</h2>
+        <Button 
+          onClick={resetDesign} 
+          variant="outline" 
+          size="sm"
+          className="text-xs px-3"
+        >
+          Reset
+        </Button>
+      </div>
 
-        {/* Active Decal Selection */}
-        {decals.length > 0 && (
-          <div>
-            <h3 className="font-medium mb-2">Active Designs ({activeSide})</h3>
-            <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto p-1 border rounded-md">
-              {decals
-                .filter((decal) => decal.side === activeSide) // Only show decals for the active side
-                .map((decal) => (
-                  <button
-                    key={decal.id}
-                    className={`p-1 border rounded-md ${
-                      activeDecalId === decal.id
-                        ? 'border-blue-500 bg-blue-100'
-                        : 'border-gray-300'
-                    }`}
-                    onClick={() => setActiveDecalId(decal.id)}
-                  >
-                    <div
-                      className="w-10 h-10 bg-cover bg-center"
-                      style={{ backgroundImage: `url(${decal.texture})` }}
-                    />
-                  </button>
-                ))}
-            </div>
-          </div>
-        )}
+      {/* Color pickers */}
+      <div className="grid grid-cols-3 gap-2">
         <div>
-          <h3 className="font-medium mb-2">T-Shirt Color</h3>
+          <label className="block text-sm font-medium mb-1">T-Shirt Color</label>
           <ColorPicker color={color} onChange={setColor} />
         </div>
         <div>
-          <h3 className="font-medium mb-2">Background Color</h3>
+          <label className="block text-sm font-medium mb-1">Background</label>
           <ColorPicker color={backgroundColor} onChange={setBackgroundColor} />
         </div>
+              {/* Simplified File Upload */}
+      <div>
         <FileUpload
-          accept="image/*"
-          label="Upload Design"
           onFileUpload={handleImageUpload}
-        />
-        <div className="flex gap-2 pt-4">
-          <Button onClick={resetDesign} className="flex-1">
-            Reset
-          </Button>
-        </div>
+          className="bg-black text-white hover:bg-gray-800 py-2 px-4 rounded"
+        >
+          Upload Design
+        </FileUpload>
+      </div>
+      </div>
+      {/* <TextEditor /> */}
+
+      {/* Position Guide */}
+      <div>
+        <h3 className="text-sm font-medium mb-2">Position Guide</h3>
+        <PositionGuide />
+      </div>
+
+      {/* Export Options */}
+      <div>
+        <ExportPanel />
       </div>
     </div>
   );
 };
+
 export default DesignPanel;

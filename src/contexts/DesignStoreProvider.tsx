@@ -1,6 +1,6 @@
 import { useState, useCallback, type ReactNode } from 'react';
 import { createContext, useContextSelector } from "use-context-selector";
-
+import { generateUUID } from 'three/src/math/MathUtils.js';
 export type Side = 'front' | 'back' | 'left_sleeve' | 'right_sleeve';
 // Define the Decal interface
 export interface Decal {
@@ -116,7 +116,7 @@ export const DesignProvider = ({ children }: DesignProviderProps) => {
       }
 
       const newDecal: Decal = {
-        id: Date.now().toString(),
+        id: generateUUID(),
         texture,
         type,
         position: initialPosition,
