@@ -20,10 +20,12 @@ export const CanvasModel = () => {
         dpr={[1, 2]} // High DPI for crisp rendering
       >
         <Suspense fallback={null}>
-          <ambientLight intensity={0.5} />
-          <directionalLight position={[0, 0, 5]} intensity={0.5} />
-          <directionalLight position={[0, 0, -5]} intensity={0.5} /> {/* Light from back */}
-          <Environment preset='warehouse' />
+          <ambientLight intensity={1.5} /> {/* Increased ambient light to illuminate shadows */}
+          <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} intensity={1} castShadow />
+          <directionalLight position={[5, 0, 10]} intensity={1.5} />
+          <directionalLight position={[-5, 0, -10]} intensity={0.5} />
+          <Environment preset='studio' />
+
           <CameraRig>
             <Center>
               <Shirt oversizedColor={color} decals={decals} />
@@ -78,11 +80,10 @@ type ShirtProps = {
 };
 
 function Shirt({ oversizedColor, decals }: ShirtProps) {
-  const { nodes, materials } = useGLTF('/models/newOT.glb');
-
+  const { nodes } = useGLTF('/models/newOT.glb');
   // Assuming all parts use the same unnamed material or similar
   const mainMaterial = useMemo(() => {
-    const mat = new THREE.MeshStandardMaterial({ color: oversizedColor, roughness: 1 });
+    const mat = new THREE.MeshStandardMaterial({ color: oversizedColor, roughness: 1, side: THREE.DoubleSide });
     return mat;
   }, [oversizedColor]);
 
@@ -96,15 +97,6 @@ function Shirt({ oversizedColor, decals }: ShirtProps) {
     });
     return map;
   }, [textureUrls, loadedTextures]);
-
-  useFrame((_state, delta) => {
-    // This part handles color damping, it's fine as is
-    // Assuming the material responsible for the main shirt color is `materials[""]`
-    const materialToDamp = (materials[""] || mainMaterial) as THREE.MeshStandardMaterial;
-    if (materialToDamp && materialToDamp instanceof THREE.MeshStandardMaterial) {
-      easing.dampC(materialToDamp.color, oversizedColor, 0.25, delta);
-    }
-  });
 
   return (
     <group>
@@ -181,7 +173,7 @@ function Shirt({ oversizedColor, decals }: ShirtProps) {
       <mesh castShadow geometry={(nodes.coler_border as THREE.Mesh).geometry} material={mainMaterial}></mesh>
       <mesh castShadow geometry={(nodes.both_sleeves as THREE.Mesh).geometry} material={mainMaterial}></mesh>
     </group>
-  ); 
+  );
 }
 
 useGLTF.preload('/models/newOT.glb');
