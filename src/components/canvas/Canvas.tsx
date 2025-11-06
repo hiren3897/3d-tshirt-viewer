@@ -20,11 +20,11 @@ export const CanvasModel = () => {
         dpr={[1, 2]} // High DPI for crisp rendering
       >
         <Suspense fallback={null}>
-          <ambientLight intensity={1.5} /> {/* Increased ambient light to illuminate shadows */}
+          {/* <ambientLight intensity={1.5} /> Increased ambient light to illuminate shadows */}
           <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} intensity={1} castShadow />
           <directionalLight position={[5, 0, 10]} intensity={1.5} />
           <directionalLight position={[-5, 0, -10]} intensity={0.5} />
-          <Environment preset='studio' />
+          <Environment preset='warehouse' />
 
           <CameraRig>
             <Center>

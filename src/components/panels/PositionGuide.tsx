@@ -4,10 +4,10 @@ import type { OnDrag, OnDragStart, OnResizeStart, OnRotate, OnResize } from 'rea
 import { useDesignStore, type Decal } from '../../contexts/DesignStoreProvider';
 
 const PIXEL_REGIONS_2D = {
-  front: { x: 0.05, y: 0.18, width: 0.43, height: 0.63 }, 
-  back: { x: 0.52, y: 0.18, width: 0.43, height: 0.63 }, 
-  left_sleeve: { x: 0.02, y: 0.85, width: 0.48, height: 0.15 }, 
-  right_sleeve: { x: 0.50, y: 0.85, width: 0.48, height: 0.15 }, 
+  front: { x: 0.05, y: 0.18, width: 0.43, height: 0.63 },
+  back: { x: 0.52, y: 0.18, width: 0.43, height: 0.63 },
+  left_sleeve: { x: 0.02, y: 0.85, width: 0.48, height: 0.15 },
+  right_sleeve: { x: 0.50, y: 0.85, width: 0.48, height: 0.15 },
 };
 
 const MESH_REGIONS_3D = {
@@ -79,6 +79,7 @@ interface DecalDisplayProps {
   isActive: boolean;
   setIsDraggingUI: (dragging: boolean) => void;
   setActiveSide: (side: Decal['side']) => void;
+  removeDecal: (id: string) => void
 }
 
 const DecalDisplay: React.FC<DecalDisplayProps> = ({
@@ -89,6 +90,7 @@ const DecalDisplay: React.FC<DecalDisplayProps> = ({
   isActive,
   setIsDraggingUI,
   setActiveSide,
+  removeDecal
 }) => {
   const decalRef = useRef<HTMLDivElement>(null);
   const moveableRef = useRef<Moveable>(null);
@@ -182,19 +184,19 @@ const DecalDisplay: React.FC<DecalDisplayProps> = ({
   }, [setIsDraggingUI]);
 
   const onResize = useCallback((e: OnResize) => {
-  e.target.style.width = `${e.width}px`;
-  e.target.style.height = `${e.height}px`;
+    e.target.style.width = `${e.width}px`;
+    e.target.style.height = `${e.height}px`;
 
-  const pixelTo3DScaleFactor = base3DScale / base2DPixelSizeFor3DScale;
-  const newScaleX = e.width * pixelTo3DScaleFactor;
-  const newScaleY = e.height * pixelTo3DScaleFactor;
+    const pixelTo3DScaleFactor = base3DScale / base2DPixelSizeFor3DScale;
+    const newScaleX = e.width * pixelTo3DScaleFactor;
+    const newScaleY = e.height * pixelTo3DScaleFactor;
 
-  const minAllowedScale = 0.001;
-  const finalScaleX = Math.max(minAllowedScale, newScaleX);
-  const finalScaleY = Math.max(minAllowedScale, newScaleY);
+    const minAllowedScale = 0.001;
+    const finalScaleX = Math.max(minAllowedScale, newScaleX);
+    const finalScaleY = Math.max(minAllowedScale, newScaleY);
 
-  updateDecal(decal.id, { scale: [finalScaleX, finalScaleY, decal.scale[2]] });
-}, [decal.id, decal.scale, updateDecal]);
+    updateDecal(decal.id, { scale: [finalScaleX, finalScaleY, decal.scale[2]] });
+  }, [decal.id, decal.scale, updateDecal]);
 
   const onResizeEnd = useCallback(() => {
     setIsDraggingUI(false); // Release UI lock after resize
@@ -212,7 +214,7 @@ const DecalDisplay: React.FC<DecalDisplayProps> = ({
 
     // Update the decal in the store live during rotation
     updateDecal(decal.id, {
-        rotation: [decal.rotation[0], decal.rotation[1], newRotationZ],
+      rotation: [decal.rotation[0], decal.rotation[1], newRotationZ],
     });
   }, [decal.id, decal.rotation, updateDecal]);
 
@@ -239,6 +241,10 @@ const DecalDisplay: React.FC<DecalDisplayProps> = ({
         onClick={(e) => {
           e.stopPropagation(); // Prevent clicks on decal from deactivating it by clicking on parent guide
           setActiveDecalId(decal.id);
+        }}
+        onDoubleClick={(e) => {
+          e.stopPropagation()
+          removeDecal(decal.id)
         }}
         style={{
           position: 'absolute',
@@ -279,7 +285,7 @@ const DecalDisplay: React.FC<DecalDisplayProps> = ({
           zoom={1}
           // origin={true} // Show the origin dot
           padding={{ left: 0, top: 0, right: 0, bottom: 0 }}
-          
+
           onDragStart={(e: OnDragStart) => {
             // Set initial drag position based on current decal's 2D position
             e.set([pos2D.x, pos2D.y]);
@@ -309,7 +315,7 @@ const DecalDisplay: React.FC<DecalDisplayProps> = ({
 };
 
 const PositionGuide: React.FC = () => {
-  const { decals, activeSide, updateDecal, setActiveDecalId, activeDecalId, setIsDraggingUI, setActiveSide } = useDesignStore((state) => ({
+  const { decals, activeSide, updateDecal, setActiveDecalId, activeDecalId, setIsDraggingUI, setActiveSide, removeDecal } = useDesignStore((state) => ({
     decals: state.decals,
     activeSide: state.activeSide,
     updateDecal: state.updateDecal,
@@ -317,6 +323,7 @@ const PositionGuide: React.FC = () => {
     activeDecalId: state.activeDecalId,
     setIsDraggingUI: state.setIsDraggingUI,
     setActiveSide: state.setActiveSide,
+    removeDecal: state.removeDecal,
   }));
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -367,6 +374,7 @@ const PositionGuide: React.FC = () => {
           isActive={decal.id === activeDecalId}
           setIsDraggingUI={setIsDraggingUI}
           setActiveSide={setActiveSide}
+          removeDecal={removeDecal}
         />
       ))}
     </div>
